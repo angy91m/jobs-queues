@@ -36,6 +36,7 @@ queue.push(                                             //Push a job list
         }
         console.log( 'Second job finished' );
     },
+    
     async ( finish, empty, result ) => {
                                                         // Another job
         await new Promise( r => setTimeout( r, 500 ) );
