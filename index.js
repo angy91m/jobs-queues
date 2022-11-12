@@ -77,7 +77,7 @@ class JobsQueue extends Array {
         }
     }
     onError( callback ) {
-        if ( !this.__errCallbacks.constructor !== Array ) this.__errCallbacks = [];
+        if ( typeof this.__errCallbacks === 'undefined' ) this.__errCallbacks = [];
         this.__errCallbacks.push( callback );
     }
 };
