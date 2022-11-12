@@ -1,6 +1,6 @@
 {
   "name": "jobs-queues",
-  "version": "1.0.0",
+  "version": "0.9.1",
   "description": "A sequential jobs manager in Express.js style",
   "main": "index.js",
   "scripts": {
@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/angy91m/jobs-queues/issues"
   },
-  "homepage": "https://github.com/angy91m/jobs-queues#readme"
+  "homepage": "https://github.com/angy91m/jobs-queues#readme",
+  "keywords": [
+    "task",
+    "job",
+    "queue",
+    "sequential",
+    "work"
+  ]
 }
