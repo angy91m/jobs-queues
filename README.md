@@ -18,25 +18,29 @@ npm test
 ```javascript
 const jobsQueues = require( 'jobs-queues' );
 const queue = jobsQueues();
-queue.push(
+queue.push(                                             //Push a job list
     ( finish ) => {
+                                                        // Any job
         setTimeout( () => {
             console.log( 'First job finished' );
-            finish( true, 'Hello world!' )
+            finish( true, 'Hello world!' )              // At the end call finish() with your results
         }, 2500 );
     },
+
     ( finish, empty, ...results ) => {
+                                                        // Another job
         if ( results[0] ) {
-            finish( results[1] );
-        } else {
-            empty();
+            finish( results[1] );                       // Call finish() with your result
+        } else {                                        // OR
+            empty();                                    // Stop this job list
         }
         console.log( 'Second job finished' );
     },
     async ( finish, empty, result ) => {
+                                                        // Another job
         await new Promise( r => setTimeout( r, 500 ) );
         console.log( result );
-        finish();
+        finish();                                       // Call finish()
     }
 );
 queue.push(
