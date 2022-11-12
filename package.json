@@ -1,0 +1,19 @@
+{
+  "name": "jobs-queues",
+  "version": "1.0.0",
+  "description": "A sequential jobs manager in Express.js style",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angy91m/jobs-queues.git"
+  },
+  "author": "angy91m",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/angy91m/jobs-queues/issues"
+  },
+  "homepage": "https://github.com/angy91m/jobs-queues#readme"
+}
