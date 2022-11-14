@@ -9,49 +9,41 @@ const __empty = function () {
 class JobsQueue extends Array {
     constructor( ...jobList ) {
         super( ...jobList );
-        this.nextJobList = 0;
         this.started = false;
         this.pause = true;
         this.emitter = new EventEmitter();
         this.emitter.on( 'finished', async ( ...results ) => {
+            if ( this.pause ) {
+                this.pause = false;
+            } else {
+                if ( typeof this[1] === 'undefined' || this[1].index === 0 ) {
+                    this[0].emitter.emit( 'end', ...results );
+                }
+                this.shift();
+                if ( !this.length ) {
+                    this.pause = true;
+                    return;
+                }
+            }
+            if ( this[0].index === 0 ) results = [];
+            await new Promise( r => setTimeout( r, 0 ) );
             try {
-                if ( this.pause ) {
-                    this.pause = false;
-                } else {
-                    this.shift();
-                    if ( !this.length ) {
-                        this.pause = true;
-                        return;
-                    }
-                }
-                if ( this[0].index === 0 ) results = [];
-                await new Promise( r => setTimeout( r, 0 ) );
-                try {
-                    await this[0].job(
-                        async ( ...newResults ) => { this.emitter.emit( 'finished', ...newResults ); },
-                        async () => {
-                            __empty.call( this );
-                            this.emitter.emit( 'finished' );
-                        },
-                        ...results
-                    );
-                } catch ( err ) {
-                    __empty.call( this );
-                    for ( let i = 0; i < this.__errCallbacks.length; i++ ) {
-                        try {
-                            this.__errCallbacks[i]( err, { jobList: this[0].jobList, job: this[0].index } );
-                        } catch ( err ) {
-                            console.log( err );
-                        }
-                    }
-                    if ( this.length ) {
-                        this.pause = true;
+                await this[0].job(
+                    async ( ...newResults ) => { this.emitter.emit( 'finished', ...newResults ); },
+                    async () => {
+                        __empty.call( this );
                         this.emitter.emit( 'finished' );
-                    }
-                }
+                    },
+                    ...results
+                );
             } catch ( err ) {
+                const em = this[0].emitter;
                 __empty.call( this );
-                throw err;
+                em.emit( 'error', err );
+                this.pause = true;
+                if ( this.length ) {
+                    this.emitter.emit( 'finished' );
+                }
             }
         } );
         this.emitter.on( 'pushed', () => {
@@ -62,12 +54,13 @@ class JobsQueue extends Array {
     }
     push( ...jobList ) {
         if ( jobList.length ) {
+            const jobListEmitter = new EventEmitter();
             jobList = jobList.map( ( e, i ) => {
-                return { job: e, index: i, jobList: this.nextJobList };
+                return { job: e, index: i, emitter: jobListEmitter };
             } );
             super.push( ...jobList );
             this.emitter.emit( 'pushed' );
-            return this.nextJobList++;
+            return jobListEmitter;
         }
     }
     start() {
@@ -75,10 +68,6 @@ class JobsQueue extends Array {
             this.started = true;
             if ( this.length ) this.emitter.emit( 'finished' );
         }
-    }
-    onError( callback ) {
-        if ( typeof this.__errCallbacks === 'undefined' ) this.__errCallbacks = [];
-        this.__errCallbacks.push( callback );
     }
 };
 

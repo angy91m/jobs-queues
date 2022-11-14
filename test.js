@@ -1,11 +1,11 @@
 "use strict";
 const jobsQueues = require( './index' );
 const queue = jobsQueues();
-queue.push(
+const jobList = queue.push(
     ( finish ) => {
         setTimeout( () => {
             console.log( 'First job finished' );
-            finish( true, 'Hello world!' )
+            finish( true, 'Hello world!' );
         }, 2500 );
     },
     ( finish, empty, ...results ) => {
@@ -17,17 +17,16 @@ queue.push(
         console.log( 'Second job finished' );
     },
     async ( finish, empty, result ) => {
-        console.log( result );
-        finish();
+        finish( result );
     }
 );
-queue.push(
+const jobList2 = queue.push(
     ( finish, empty ) => {
-        console.log( 'Another job list' );
-        finish();
+        finish( 'Another job list' );
     }
 );
 
-queue.onError( ( err, ref ) => {
-    console.log( {err, ref} )
-} )
+jobList.on( 'end', data => console.log( data ) );
+jobList.on( 'error', err => console.log( err ) );
+jobList2.on( 'end', data => console.log( data ) );
+jobList2.on( 'error', err => console.log( err ) );
