@@ -56,16 +56,12 @@ jobList2.on( 'error', err => console.log( err ) );
 
 ## Constructor
 ```javascript
-jobsQueues( started = true [, ...jobList: Function] );
+jobsQueues( started = true );
 ```
 
 #### Parameters
 
 `started` Default `true` - Set to `false` if you want to start your jobs later
-* `jobList` Optional - Any function that accepts three parameters:
-  * `finish` Required - A callback you have to call at the end of every job. It accepts `...results` and pass them to the next job in the same job list
-  * `empty` Optional - A callback you have to call to stop the jobs in the same job list
-  * `...results` Optional - Any result yo have passed in the `finish()` of the previous one job in the same job list
 
 #### Return
 
@@ -87,7 +83,9 @@ queue.push( ...jobList: Function );
 
 #### Return
 
-The index of the job list as `Integer`
+An emitter related to the job list that can emit:
+* `end` If the last job in job list call `finish()`
+* `error` If `empy()` was called or if an error occurs
 
 ### `start`
 ```javascript
