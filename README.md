@@ -18,12 +18,12 @@ npm test
 ```javascript
 const jobsQueues = require( 'jobs-queues' );
 const queue = jobsQueues();
-queue.push(                                             //Push a job list
-    ( finish ) => {
+const jobList = queue.push(                             //Push a job list and return emitter
                                                         // Any job
+    ( finish ) => {
         setTimeout( () => {
             console.log( 'First job finished' );
-            finish( true, 'Hello world!' )              // At the end call finish() with your results
+            finish( true, 'Hello world!' );             // At the end call finish() 
         }, 2500 );
     },
 
@@ -32,28 +32,25 @@ queue.push(                                             //Push a job list
         if ( results[0] ) {
             finish( results[1] );                       // Call finish() with your result
         } else {                                        // OR
-            empty();                                    // Stop this job list
+            empty( new Error( 'Some message' ) );       // Stop this job list
         }
         console.log( 'Second job finished' );
     },
-    
     async ( finish, empty, result ) => {
-                                                        // Another job
-        await new Promise( r => setTimeout( r, 500 ) );
-        console.log( result );
-        finish();                                       // Call finish()
+                                                        // Last job in the job list
+        finish( result );                               // Call finish() and emit "end" passing result
     }
 );
-queue.push(
-    ( finish ) => {
-        console.log( 'Another job list' );
-        finish();
+const jobList2 = queue.push(
+    ( finish, empty ) => {
+        finish( 'Another job list' );
     }
 );
 
-queue.onError( ( err, refs ) => {
-    console.log( { err, refs } );
-} );
+jobList.on( 'end', data => console.log( data ) );
+jobList.on( 'error', err => console.log( err ) );
+jobList2.on( 'end', data => console.log( data ) );
+jobList2.on( 'error', err => console.log( err ) );
 
 ```
 
@@ -64,7 +61,7 @@ jobsQueues( started = true [, ...jobList: Function] );
 
 #### Parameters
 
-* `started` Default `true` - Set to `false` if you want to start your jobs later
+`started` Default `true` - Set to `false` if you want to start your jobs later
 * `jobList` Optional - Any function that accepts three parameters:
   * `finish` Required - A callback you have to call at the end of every job. It accepts `...results` and pass them to the next job in the same job list
   * `empty` Optional - A callback you have to call to stop the jobs in the same job list
@@ -78,8 +75,15 @@ A `JobsQueues` instance that extends `Array`
 
 ### `push`
 ```javascript
-queue.push( ...jobList );
+queue.push( ...jobList: Function );
 ```
+
+#### Parameters
+
+`jobList` Optional - Any function that accepts three parameters:
+  * `finish` Required - A callback you have to call at the end of every job. It accepts `...results` and pass them to the next job in the same job list or to the `end` event of the job list emitter
+  * `empty` Optional - A callback you have to call to stop all the jobs in the same job list and to emit an `error`
+  * `...results` Optional - Any result yo have passed in the `finish()` of the previous one job in the same job list
 
 #### Return
 
@@ -89,15 +93,6 @@ The index of the job list as `Integer`
 ```javascript
 queue.start();
 ```
-
-### `onError`
-```javascript
-queue.onError( callback );
-```
-
-#### Parameters
-
-* `callback` Required - A function that accepts `error` and `referements` of the interrupted job list index and job index (in the order you've pushed them)
 
 ## Note
 A job list is not directly related with errors of another. It runs in anyway when the previous one exits.
