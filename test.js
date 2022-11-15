@@ -12,7 +12,7 @@ const jobList = queue.push(
         if ( results[0] ) {
             finish( results[1] );
         } else {
-            empty();
+            empty( new Error( 'Some message' ) );
         }
         console.log( 'Second job finished' );
     },

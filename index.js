@@ -30,9 +30,14 @@ class JobsQueue extends Array {
             try {
                 await this[0].job(
                     async ( ...newResults ) => { this.emitter.emit( 'finished', ...newResults ); },
-                    async () => {
+                    async ( err ) => {
+                        const em = this[0].emitter;
                         __empty.call( this );
-                        this.emitter.emit( 'finished' );
+                        em.emit( 'error', err );
+                        this.pause = true;
+                        if ( this.length ) {
+                            this.emitter.emit( 'finished' );
+                        }
                     },
                     ...results
                 );
